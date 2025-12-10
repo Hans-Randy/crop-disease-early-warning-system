@@ -4,9 +4,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, models, transforms
 import os
+import kagglehub
 
 # --- CONFIGURATION ---
-DATA_DIR = './data/plant_village'  # CHANGE THIS to the path where you unzipped PlantVillage
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
 EPOCHS = 5
@@ -15,6 +15,17 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main():
     print(f"Using device: {DEVICE}")
+    
+    # --- DATA DOWNLOAD ---
+    print("Downloading dataset from Kaggle...")
+    # This downloads the dataset and returns the path to where it was saved
+    try:
+        path = kagglehub.dataset_download("mohitsingh1804/plantvillage")
+        print(f"Dataset downloaded to: {path}")
+            
+    except Exception as e:
+        print(f"Failed to download dataset: {e}")
+        return
 
     # DATA PREPARATION
     # We use transforms to resize images and augment training data
@@ -33,8 +44,8 @@ def main():
     ])
     
     # Define the paths to the train and val directories
-    train_dir = os.path.join(DATA_DIR, 'train')
-    val_dir = os.path.join(DATA_DIR, 'val')
+    train_dir = os.path.join(path, 'train')
+    val_dir = os.path.join(path, 'val')
 
     # Load the dataset from the folder structure
     # ImageFolder expects folders to be named after the classes
@@ -42,7 +53,7 @@ def main():
         train_dataset = datasets.ImageFolder(train_dir, transform=train_transforms)
         val_dataset = datasets.ImageFolder(val_dir, transform=val_transforms)
     except FileNotFoundError:
-        print(f"Error: Could not find directory {DATA_DIR}. Please check your path.")
+        print(f"Error: Could not find directory {path}. Please check your path.")
         return
 
     # Create DataLoaders
